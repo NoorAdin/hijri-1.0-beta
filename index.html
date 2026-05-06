@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Hijri-Gregorian Date Converter | محول التاريخ الهجري والميلادي</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1B5E20;
+            --primary-light: #2E7D32;
+            --primary-dark: #144516;
+            --secondary: #1565C0;
+            --secondary-light: #1976D2;
+            --background: #FAFAFA;
+            --card-bg: #FFFFFF;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border: #E0E0E0;
+            --accent-gold: #C9A227;
+            --error: #D32F2F;
+            --success: #388E3C;
+            
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 6px 16px rgba(0,0,0,0.12);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans', 'Noto Sans Arabic', sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Decorative Header Pattern */
+        .header-pattern {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 24px 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L30 55 M5 30 L55 30' stroke='%23ffffff' stroke-width='0.5' opacity='0.1' fill='none'/%3E%3Ccircle cx='30' cy='30' r='20' stroke='%23ffffff' stroke-width='0.5' opacity='0.1' fill='none'/%3E%3C/svg%3E");
+            background-size: 60px 60px;
+            pointer-events: none;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .app-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .app-title .icon {
+            width: 40px;
+            height: 40px;
+            fill: var(--accent-gold);
+        }
+        
+        .app-title .subtitle {
+            font-size: 0.95rem;
+            font-weight: 400;
+            opacity: 0.9;
+            width: 100%;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px 16px;
+        }
+        
+        /* Today's Date Card */
+        .today-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
+            margin-bottom: 24px;
+            border-left: 4px solid var(--accent-gold);
+        }
+        
+        .today-card h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .today-card h2 svg {
+            width: 20px;
+            height: 20px;
+            fill: var(--accent-gold);
+        }
+        
+        .today-dates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .today-date {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px 16px;
+            background: var(--background);
+            border-radius: var(--radius-sm);
+        }
+        
+        .today-date.gregorian {
+            border: 1px solid var(--secondary);
+        }
+        
+        .today-date.hijri {
+            border: 1px solid var(--primary);
+        }
+        
+        .today-date .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .today-date.gregorian .label {
+            color: var(--secondary);
+        }
+        
+        .today-date.hijri .label {
+            color: var(--primary);
+        }
+        
+        .today-date .date {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Converter Panels */
+        .converter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        
+        .panel {
+            background: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 24px;
+            transition: var(--transition);
+        }
+        
+        .panel:hover {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        .panel-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .panel-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: #FFFFFF;
+        }
+        
+        .panel.gregorian-to-hijri .panel-icon {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        }
+        
+        .panel.hijri-to-gregorian .panel-icon {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        }
+        
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .panel-title .arrow {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        
+        /* Form Elements */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .input-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .input-field {
+            position: relative;
+        }
+        
+        .input-field input,
+        .input-field select {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            color: var(--text-primary);
+            transition: var(--transition);
+            appearance: none;
+        }
+        
+        .input-field input:focus,
+        .input-field select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(27, 94, 32, 0.1);
+        }
+        
+        .input-field select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23757575' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            cursor: pointer;
+        }
+        
+        .input-field input::placeholder {
+            color: #BDBDBD;
+        }
+        
+        .input-field input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        .input-field input[type="number"]::-webkit-outer-spin-button,
+        .input-field input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .input-field .hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+        }
+        
+        /* Convert Button */
+        .convert-btn {
+            width: 100%;
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            border: none;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .convert-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+        
+        .panel.gregorian-to-hijri .convert-btn {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            color: #FFFFFF;
+        }
+        
+        .panel.hijri-to-gregorian .convert-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: #FFFFFF;
+        }
+        
+        .convert-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .convert-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Result Display */
+        .result-card {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: var(--radius-sm);
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .result-card.show {
+            display: block;
+        }
+        
+        .result-card.success {
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            border: 1px solid var(--success);
+        }
+        
+        .result-card.error {
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            border: 1px solid var(--error);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .result-card.success .result-label {
+            color: var(--success);
+        }
+        
+        .result-card.error .result-label {
+            color: var(--error);
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .result-value.arabic {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            font-size: 1.25rem;
+        }
+        
+        .result-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Copy Button */
+        .copy-btn {
+            margin-top: 12px;
+            padding: 8px 16px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .copy-btn svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        
+        .copy-btn:hover {
+            background: var(--background);
+            color: var(--text-primary);
+        }
+        
+        .copy-btn.copied {
+            background: var(--success);
+            border-color: var(--success);
+            color: #FFFFFF;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 767px) {
+            .app-title {
+                font-size: 1.4rem;
+            }
+            
+            .converter-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .today-dates {
+                flex-direction: column;
+            }
+        }
+        
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #FFFFFF;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-pattern">
+        <div class="header-content">
+            <h1 class="app-title">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V10h14v9zm0-12H5V5h14v2z"/>
+                </svg>
+                <span>Date Converter</span>
+                <span class="subtitle">تحويل التاريخ الهجري والميلادي</span>
+            </h1>
+        </div>
+    </header>
+    
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Today's Date -->
+        <section class="today-card">
+            <h2>
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                </svg>
+                <span>Today's Date / تاريخ اليوم</span>
+            </h2>
+            <div class="today-dates">
+                <div class="today-date gregorian">
+                    <div class="label">Gregorian / الميلادي</div>
+                    <div class="date" id="todayGregorian">Loading...</div>
+                </div>
+                <div class="today-date hijri">
+                    <div class="label">Hijri / الهجري</div>
+                    <div class="date" id="todayHijri">Loading...</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Converter Panels -->
+        <div class="converter-grid">
+            <!-- Gregorian to Hijri Panel -->
+            <section class="panel gregorian-to-hijri">
+                <div class="panel-header">
+                    <div class="panel-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                    </div>
+                    <div class="panel-title">
+                        Gregorian to Hijri
+                        <span class="arrow">ميلادي إلى هجري</span>
+                    </div>
+                </div>
+                
+                <form class="conversion-form" data-type="gregorian-to-hijri">
+                    <div class="input-group">
+                        <label>Enter Gregorian Date / أدخل التاريخ الميلادي</label>
+                        <div class="input-row">
+                            <div class="input-field">
+                                <input type="number" id="gDay" min="1" max="31" placeholder="Day / يوم" required>
+                            </div>
+                            <div class="input-field">
+                                <select id="gMonth" required>
+                                    <option value="">Month / شهر</option>
+                                    <option value="1">January / يناير</option>
+                                    <option value="2">February / فبراير</option>
+                                    <option value="3">March / مارس</option>
+                                    <option value="4">April / أبريل</option>
+                                    <option value="5">May / مايو</option>
+                                    <option value="6">June / يونيو</option>
+                                    <option value="7">July / يوليو</option>
+                                    <option value="8">August / أغسطس</option>
+                                    <option value="9">September / سبتمبر</option>
+                                    <option value="10">October / أكتوبر</option>
+                                    <option value="11">November / نوفمبر</option>
+                                    <option value="12">December / ديسمبر</option>
+                                </select>
+                            </div>
+                            <div class="input-field">
+                                <input type="number" id="gYear" min="622" max="9999" placeholder="Year / سنة" required>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="convert-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                        </svg>
+                        Convert to Hijri / حول إلى هجري
+                    </button>
+                </form>
+                
+                <div class="result-card" id="resultGregorianToHijri">
+                    <div class="result-label">Hijri Date / التاريخ الهجري</div>
+                    <div class="result-value" id="resultHijriValue"></div>
+                    <div class="result-value arabic" id="resultHijriArabic"></div>
+                    <div class="result-details" id="resultHijriDetails"></div>
+                    <button class="copy-btn" onclick="copyResult('resultHijriValue')">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                        </svg>
+                        Copy / نسخ
+                    </button>
+                </div>
+            </section>
+            
+            <!-- Hijri to Gregorian Panel -->
+            <section class="panel hijri-to-gregorian">
+                <div class="panel-header">
+                    <div class="panel-icon">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v9zM7 10h5v5H7z"/>
+                        </svg>
+                    </div>
+                    <div class="panel-title">
+                        Hijri to Gregorian
+                        <span class="arrow">هجري إلى ميلادي</span>
+                    </div>
+                </div>
+                
+                <form class="conversion-form" data-type="hijri-to-gregorian">
+                    <div class="input-group">
+                        <label>Enter Hijri Date / أدخل التاريخ الهجري</label>
+                        <div class="input-row">
+                            <div class="input-field">
+                                <input type="number" id="hDay" min="1" max="30" placeholder="Day / يوم" required>
+                            </div>
+                            <div class="input-field">
+                                <select id="hMonth" required>
+                                    <option value="">Month / شهر</option>
+                                    <option value="1">Muharram / محرّم</option>
+                                    <option value="2">Safar / صفر</option>
+                                    <option value="3">Rabi al-Awwal / ربيع الأول</option>
+                                    <option value="4">Rabi al-Thani / ربيع الثاني</option>
+                                    <option value="5">Jumada al-Awwal / جمادى الأول</option>
+                                    <option value="6">Jumada al-Thani / جمادى الثاني</option>
+                                    <option value="7">Rajab / رجب</option>
+                                    <option value="8">Sha'ban / شعبان</option>
+                                    <option value="9">Ramadan / رمضان</option>
+                                    <option value="10">Shawwal / شوّال</option>
+                                    <option value="11">Dhu al-Qi'dah / ذو القعدة</option>
+                                    <option value="12">Dhu al-Hijjah / ذو الحجة</option>
+                                </select>
+                            </div>
+                            <div class="input-field">
+                                <input type="number" id="hYear" min="1" max="1500" placeholder="Year / سنة" required>
+                            </div>
+                        </div>
+                        <div class="hint">Hijri months have 29 or 30 days / الأشهر الهجرية فيها 29 أو 30 يوم</div>
+                    </div>
+                    <button type="submit" class="convert-btn">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                        </svg>
+                        Convert to Gregorian / حول إلى ميلادي
+                    </button>
+                </form>
+                
+                <div class="result-card" id="resultHijriToGregorian">
+                    <div class="result-label">Gregorian Date / التاريخ الميلادي</div>
+                    <div class="result-value" id="resultGregorianValue"></div>
+                    <div class="result-details" id="resultGregorianDetails"></div>
+                    <button class="copy-btn" onclick="copyResult('resultGregorianValue')">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                        </svg>
+                        Copy / نسخ
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Hijri-Gregorian Date Converter | محول التاريخ</p>
+    </footer>
+    
+    <script>
+        // ==========================================
+        // HIJRI-GREGORIAN DATE CONVERTER ENGINE
+        // ==========================================
+        
+        // Islamic calendar constants
+        const HIJRI_MONTH_LENGTHS = [30, 29, 30, 29, 30, 29, 30, 29, 30, 29, 30, 29];
+        const GREGORIAN_MONTH_LENGTHS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        
+        const HIJRI_MONTHS_EN = [
+            'Muharram', 'Safar', "Rabi' al-Awwal", "Rabi' al-Thani",
+            "Jumada al-Awwal", "Jumada al-Thani", 'Rajab', "Sha'ban",
+            'Ramadan', 'Shawwal', "Dhu al-Qi'dah", "Dhu al-Hijjah"
+        ];
+        
+        const HIJRI_MONTHS_AR = [
+            'مُحَرَّم', 'صَفَر', 'رَبيعُ الأَول', 'رَبيعُ الثَّاني',
+            'جُمَعى الأَول', 'جُمَعى الثَّاني', 'رَجَب', 'شَعْبان',
+            'رَمَضان', 'شَوَّال', 'ذو القَعْدة', 'ذو الحِجَّة'
+        ];
+        
+        const GREGORIAN_MONTH_NAMES = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        
+        // Check if Gregorian year is leap year
+        function isGregorianLeap(y) {
+            return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+        }
+        
+        // Get days elapsed before a given Gregorian date (0-based)
+        function gregorianToDays(y, m, d) {
+            const y1 = y - 1;
+            let days = y1 * 365 + Math.floor(y1 / 4) - Math.floor(y1 / 100) + Math.floor(y1 / 400);
+            const monthDays = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            days += monthDays[m - 1];
+            if (m > 2 && isGregorianLeap(y)) days++;
+            return days + d - 1;
+        }
+        
+        // Days to Gregorian - fast algorithm  
+        function daysToGregorian(days) {
+            // Approximate year
+            let n400 = Math.floor(days / 146097);
+            let d = days % 146097;
+            let n100 = Math.floor(d / 36524);
+            let d4 = d % 36524;
+            let n1 = Math.floor(d4 / 365);
+            
+            let year = 400 * n400 + 100 * n100 + n1;
+            if (n100 === 4 || n1 === 4) year--;  // Last day of leap century
+            
+            // Day of year
+            let dayOfYear = days - gregorianToDays(year + 1, 1, 1) + 1;
+            
+            // Find month
+            let month = 1;
+            for (let i = 1; i <= 12; i++) {
+                const mLen = i === 2 && isGregorianLeap(year + 1) ? 29 : GREGORIAN_MONTH_LENGTHS[i - 1];
+                if (dayOfYear <= mLen) break;
+                dayOfYear -= mLen;
+                month++;
+            }
+            
+            return { day: dayOfYear, month, year: year + 1 };
+        }
+        
+        // Islamic epoch: July 16, 622 CE
+        const ISLAMIC_EPOCH = gregorianToDays(622, 7, 16);
+        
+        // Convert Gregorian to Hijri
+        function gregorianToHijri(gDate) {
+            const fixed = gregorianToDays(gDate.year, gDate.month, gDate.day);
+            const daysSince = fixed - ISLAMIC_EPOCH + 1;
+            
+            // Islamic year (each year = 354 days)
+            const year = Math.floor(daysSince / 354) + 1;
+            
+            // Day in Islamic year  
+            const dayInYear = daysSince - (year - 1) * 354;
+            
+            // Find month
+            let month = 1;
+            let dayOfYear = dayInYear;
+            for (let i = 0; i < 12; i++) {
+                const mDays = HIJRI_MONTH_LENGTHS[i];
+                if (dayOfYear <= mDays) { month = i + 1; break; }
+                dayOfYear -= mDays;
+            }
+            
+            return { day: dayOfYear, month, year };
+        }
+        
+        // Convert Hijri to Gregorian  
+        function hijriToGregorian(hDate) {
+            const years = hDate.year - 1;
+            const leapYears = Math.floor((years * 11 + 3) / 30);
+            let days = years * 354 + leapYears;
+            
+            // Add months
+            for (let i = 0; i < hDate.month - 1; i++) {
+                days += HIJRI_MONTH_LENGTHS[i];
+            }
+            
+            // Add day
+            days += hDate.day;
+            
+            const fixed = ISLAMIC_EPOCH + days - 1;
+            return daysToGregorian(fixed);
+        }
+        
+        /**
+         * Validate Hijri date
+         */
+        function isValidHijriDate(year, month, day) {
+            if (year < 1 || month < 1 || month > 12 || day < 1) {
+                return false;
+            }
+            return day <= HIJRI_MONTH_LENGTHS[month - 1];
+        }
+        
+        /**
+         * Validate Gregorian date
+         */
+        function isValidGregorianDate(year, month, day) {
+            if (year < 1 || month < 1 || month > 12 || day < 1) {
+                return false;
+            }
+            let maxDay = GREGORIAN_MONTH_LENGTHS[month - 1];
+            if (month === 2) maxDay = isGregorianLeap(year) ? 29 : 28;
+            return day <= maxDay;
+        }
+        
+        /**
+         * Format Hijri date string
+         */
+        function formatHijriDate(hijriDate) {
+            const day = hijriDate.day;
+            const month = hijriDate.month;
+            const year = hijriDate.year;
+            
+            const monthNameEn = HIJRI_MONTHS_EN[month - 1];
+            const monthNameAr = HIJRI_MONTHS_AR[month - 1];
+            
+            return {
+                en: `${day} ${monthNameEn}, ${year} AH`,
+                ar: `${day} ${monthNameAr} ${year}هـ`,
+                details: `${day} ${monthNameEn} ${monthNameAr} ${year} (AH)`
+            };
+        }
+        
+        /**
+         * Format Gregorian date string
+         */
+        function formatGregorianDate(gregorianDate) {
+            const day = gregorianDate.day;
+            const month = gregorianDate.month;
+            const year = gregorianDate.year;
+            
+            const monthName = GREGORIAN_MONTH_NAMES[month - 1];
+            
+            return {
+                en: `${day} ${monthName} ${year}`,
+                details: `${day} ${monthName} ${year} CE`
+            };
+        }
+        
+        /**
+         * Get current date in both calendars
+         */
+        function getCurrentDates() {
+            const now = new Date();
+            const gregorian = {
+                year: now.getFullYear(),
+                month: now.getMonth() + 1,
+                day: now.getDate()
+            };
+            
+            const hijri = gregorianToHijri(gregorian);
+            
+            return {
+                gregorian: formatGregorianDate(gregorian),
+                hijri: formatHijriDate(hijri)
+            };
+        }
+        
+        // ==========================================
+        // UI HANDLERS
+        // ==========================================
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Display today's date in both calendars
+            const currentDates = getCurrentDates();
+            
+            document.getElementById('todayGregorian').textContent = currentDates.gregorian.en;
+            document.getElementById('todayHijri').textContent = currentDates.hijri.en + ' / ' + currentDates.hijri.ar;
+            
+            // Handle form submissions
+            document.querySelectorAll('.conversion-form').forEach(function(form) {
+                form.addEventListener('submit', handleConversion);
+            });
+        });
+        
+        /**
+         * Handle conversion form submission
+         */
+        function handleConversion(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const type = form.dataset.type;
+            
+            if (type === 'gregorian-to-hijri') {
+                convertGregorianToHijri();
+            } else if (type === 'hijri-to-gregorian') {
+                convertHijriToGregorian();
+            }
+        }
+        
+        /**
+         * Convert Gregorian to Hijri
+         */
+        function convertGregorianToHijri() {
+            const gDay = parseInt(document.getElementById('gDay').value);
+            const gMonth = parseInt(document.getElementById('gMonth').value);
+            const gYear = parseInt(document.getElementById('gYear').value);
+            
+            const resultCard = document.getElementById('resultGregorianToHijri');
+            
+            // Validate
+            if (!gDay || !gMonth || !gYear) {
+                showError(resultCard, 'Please enter all fields / الرجاء إدخال جميع الحقول');
+                return;
+            }
+            
+            if (!isValidGregorianDate(gYear, gMonth, gDay)) {
+                showError(resultCard, 'Invalid Gregorian date / تاريخ ميلادي غير صالح');
+                return;
+            }
+            
+            // Convert
+            try {
+                const gregorianDate = { day: gDay, month: gMonth, year: gYear };
+                const hijri = gregorianToHijri(gregorianDate);
+                const formatted = formatHijriDate(hijri);
+                
+                showSuccess(resultCard, {
+                    value: formatted.en,
+                    arabic: formatted.ar,
+                    details: formatted.details
+                });
+            } catch (error) {
+                showError(resultCard, 'Conversion error / خطأ في التحويل');
+                console.error(error);
+            }
+        }
+        
+        /**
+         * Convert Hijri to Gregorian
+         */
+        function convertHijriToGregorian() {
+            const hDay = parseInt(document.getElementById('hDay').value);
+            const hMonth = parseInt(document.getElementById('hMonth').value);
+            const hYear = parseInt(document.getElementById('hYear').value);
+            
+            const resultCard = document.getElementById('resultHijriToGregorian');
+            
+            // Validate
+            if (!hDay || !hMonth || !hYear) {
+                showError(resultCard, 'Please enter all fields / الرجاء إدخال جميع الحقول');
+                return;
+            }
+            
+            if (!isValidHijriDate(hYear, hMonth, hDay)) {
+                showError(resultCard, 'Invalid Hijri date / تاريخ هجري غير صالح');
+                return;
+            }
+            
+            // Convert
+            try {
+                const hijriDate = { day: hDay, month: hMonth, year: hYear };
+                const gregorian = hijriToGregorian(hijriDate);
+                const formatted = formatGregorianDate(gregorian);
+                
+                showSuccess(resultCard, {
+                    value: formatted.en,
+                    details: formatted.details
+                });
+            } catch (error) {
+                showError(resultCard, 'Conversion error / خطأ في التحويل');
+                console.error(error);
+            }
+        }
+        
+        /**
+         * Show success result
+         */
+        function showSuccess(card, result) {
+            card.className = 'result-card show success';
+            document.getElementById('resultHijriValue').textContent = result.value;
+            document.getElementById('resultHijriArabic').textContent = result.arabic || '';
+            document.getElementById('resultHijriDetails').textContent = result.details || '';
+            document.getElementById('resultGregorianValue').textContent = result.value;
+            document.getElementById('resultGregorianDetails').textContent = result.details || '';
+        }
+        
+        /**
+         * Show error result
+         */
+        function showError(card, message) {
+            card.className = 'result-card show error';
+            document.getElementById('resultHijriValue').textContent = message;
+            document.getElementById('resultHijriArabic').textContent = '';
+            document.getElementById('resultHijriDetails').textContent = '';
+            document.getElementById('resultGregorianValue').textContent = message;
+            document.getElementById('resultGregorianDetails').textContent = '';
+        }
+        
+        /**
+         * Copy result to clipboard
+         */
+        function copyResult(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                const btn = event.target.closest('.copy-btn');
+                btn.classList.add('copied');
+                btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copied! / تم!';
+                
+                setTimeout(function() {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg> Copy / نسخ';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
